@@ -18,38 +18,13 @@ export async function getArticlesCollection({
   pageCount: number
 }> {
   try {
-    const params: Record<string, any> = {
-      "fields[node--article]": "title,body,field_image,uid,created",
-      include: "field_image,uid",
-      "page[limit]": limit,
-      "page[offset]": (page - 1) * limit,
-      sort: sort === "asc" ? "created" : "-created",
-    }
-
-    if (search) {
-      params["filter[title-body-combine][group][conjunction]"] = "OR"
-      params[
-        "filter[title-body-combine][group][membership][title][condition][path]"
-      ] = "title"
-      params[
-        "filter[title-body-combine][group][membership][title][condition][operator]"
-      ] = "CONTAINS"
-      params[
-        "filter[title-body-combine][group][membership][title][condition][value]"
-      ] = search
-      params[
-        "filter[title-body-combine][group][membership][body][condition][path]"
-      ] = "body.value"
-      params[
-        "filter[title-body-combine][group][membership][body][condition][operator]"
-      ] = "CONTAINS"
-      params[
-        "filter[title-body-combine][group][membership][body][condition][value]"
-      ] = search
-    }
-
     const apiUrl = `/api/articles?page=${page}&limit=${limit}&sort=${sort}${search ? `&search=${encodeURIComponent(search)}` : ""}`
     const response = await fetch(apiUrl)
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`)
+    }
+
     const data = await response.json()
 
     return {

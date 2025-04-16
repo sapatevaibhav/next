@@ -138,10 +138,7 @@ export default function ArticlesPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {articles?.length ? (
               articles.map((node) => (
-                <div
-                  key={node.id}
-                  className="border rounded-lg overflow-hidden shadow-md"
-                >
+                <div key={node.id} className="border rounded-lg overflow-hidden shadow-md">
                   <ArticleCard node={node} />
                   <div className="p-4 flex justify-between bg-gray-50">
                     <Link
@@ -160,7 +157,7 @@ export default function ArticlesPage() {
                 </div>
               ))
             ) : (
-              <p className="col-span-full text-center text-gray-600">
+              <p className="col-span-full text-center text-gray-600 py-10">
                 {searchQuery
                   ? "No articles match your search. Please try different keywords."
                   : "No articles found. Create your first article to get started."}
@@ -168,12 +165,11 @@ export default function ArticlesPage() {
             )}
           </div>
 
+          {/* Pagination UI */}
           {totalPages > 1 && (
             <div className="flex justify-center mt-10">
-              <nav
-                className="flex items-center space-x-2"
-                aria-label="Pagination"
-              >
+              <nav className="flex items-center space-x-2" aria-label="Pagination">
+                {/* Previous button */}
                 <button
                   onClick={() => goToPage(currentPage - 1)}
                   disabled={currentPage === 1}
@@ -186,36 +182,42 @@ export default function ArticlesPage() {
                   Previous
                 </button>
 
+                {/* Page numbers */}
                 {Array.from({ length: totalPages }).map((_, i) => {
-                  const pageNum = i + 1
+                  const pageNumber = i + 1;
 
+                  // Show first, last, and pages around current page
                   const shouldShow =
-                    pageNum === 1 ||
-                    pageNum === totalPages ||
-                    Math.abs(pageNum - currentPage) <= 1
+                    pageNumber === 1 ||
+                    pageNumber === totalPages ||
+                    Math.abs(pageNumber - currentPage) <= 1;
 
-                  if (!shouldShow) {
-                    if (pageNum === 2 || pageNum === totalPages - 1) {
-                      return <span key={`ellipsis-${pageNum}`}>...</span>
-                    }
-                    return null
+                  if (shouldShow) {
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => goToPage(pageNumber)}
+                        className={`px-3 py-1 rounded ${
+                          pageNumber === currentPage
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200 hover:bg-gray-300"
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  } else if (
+                    (pageNumber === 2 && currentPage > 3) ||
+                    (pageNumber === totalPages - 1 && currentPage < totalPages - 2)
+                  ) {
+                    // Show ellipsis for skipped pages
+                    return <span key={`ellipsis-${pageNumber}`} className="px-1">...</span>;
                   }
 
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => goToPage(pageNum)}
-                      className={`px-3 py-1 rounded ${
-                        pageNum === currentPage
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 hover:bg-gray-300"
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  )
+                  return null;
                 })}
 
+                {/* Next button */}
                 <button
                   onClick={() => goToPage(currentPage + 1)}
                   disabled={currentPage === totalPages}
@@ -228,6 +230,14 @@ export default function ArticlesPage() {
                   Next
                 </button>
               </nav>
+            </div>
+          )}
+
+          {/* Page info */}
+          {totalPages > 1 && (
+            <div className="text-center text-gray-600 mt-4">
+              Page {currentPage} of {totalPages}
+              <span className="ml-2">({totalItems} total articles)</span>
             </div>
           )}
         </>
