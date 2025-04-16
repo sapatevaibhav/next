@@ -5,7 +5,7 @@ export function HeaderNav() {
     <header>
       <div className="container flex items-center justify-between py-6 mx-auto">
         <Link href="/" className="text-2xl font-semibold no-underline">
-          Next.js for Drupal
+          My College
         </Link>
         <Link
           href="https://next-drupal.org/docs"

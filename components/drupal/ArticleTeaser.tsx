@@ -22,13 +22,13 @@ export function ArticleTeaser({ node, ...props }: ArticleTeaserProps) {
         ) : null}
         <span> - {formatDate(node.created)}</span>
       </div>
-      {node.field_image && (
+      {node.field_image && node.field_image.uri && (
         <figure className="my-4">
           <Image
             src={absoluteUrl(node.field_image.uri.url)}
             width={768}
             height={480}
-            alt={node.field_image.resourceIdObjMeta.alt}
+            alt={node.field_image.resourceIdObjMeta?.alt || "Article image"}
           />
         </figure>
       )}

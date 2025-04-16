@@ -1,14 +1,10 @@
-import { Suspense } from "react"
-import { draftMode } from "next/headers"
-import { DraftAlertClient } from "./Client"
+import { Suspense } from "react";
+import { DraftAlertWrapper } from "./Wrapper";
 
-export async function DraftAlert() {
-  const draft = await draftMode()
-  const isDraftEnabled = draft.isEnabled
-
+export function DraftAlert() {
   return (
     <Suspense fallback={null}>
-      <DraftAlertClient isDraftEnabled={isDraftEnabled} />
+      <DraftAlertWrapper />
     </Suspense>
-  )
+  );
 }
