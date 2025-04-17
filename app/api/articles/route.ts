@@ -10,6 +10,20 @@ export async function GET(request: NextRequest) {
   const sort = (url.searchParams.get("sort") || "desc") as "asc" | "desc"
   const search = url.searchParams.get("search") || ""
 
+  const debugResponse = await serverDrupal.getResourceCollection<DrupalNode[]>(
+    "node--article",
+    {
+      params: {
+        "fields[node--article]": "title,body",
+        "page[limit]": 1,
+      },
+    }
+  )
+  console.log(
+    "DEBUG - Article field structure:",
+    JSON.stringify(debugResponse[0]?.body, null, 2)
+  )
+
   try {
     const params: Record<string, any> = {
       "fields[node--article]": "title,body,field_image,uid,created",
@@ -23,10 +37,12 @@ export async function GET(request: NextRequest) {
       params["filter[title][operator]"] = "CONTAINS"
       params["filter[title][value]"] = search
       params["filter[title][path]"] = "title"
+      params["filter[title][group]"] = "or-group"
 
       params["filter[body][operator]"] = "CONTAINS"
       params["filter[body][value]"] = search
       params["filter[body][path]"] = "body.value"
+      params["filter[body][group]"] = "or-group"
 
       params["filter[or-group][group][conjunction]"] = "OR"
       params["filter[or-group][group][memberOf]"] = "title,body"
@@ -50,10 +66,12 @@ export async function GET(request: NextRequest) {
       countParams.set("filter[title][operator]", "CONTAINS")
       countParams.set("filter[title][value]", search)
       countParams.set("filter[title][path]", "title")
+      countParams.set("filter[title][group]", "or-group")
 
       countParams.set("filter[body][operator]", "CONTAINS")
       countParams.set("filter[body][value]", search)
       countParams.set("filter[body][path]", "body.value")
+      countParams.set("filter[body][group]", "or-group")
 
       countParams.set("filter[or-group][group][conjunction]", "OR")
       countParams.set("filter[or-group][group][memberOf]", "title,body")

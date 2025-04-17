@@ -138,7 +138,10 @@ export default function ArticlesPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {articles?.length ? (
               articles.map((node) => (
-                <div key={node.id} className="border rounded-lg overflow-hidden shadow-md">
+                <div
+                  key={node.id}
+                  className="border rounded-lg overflow-hidden shadow-md"
+                >
                   <ArticleCard node={node} />
                   <div className="p-4 flex justify-between bg-gray-50">
                     <Link
@@ -168,7 +171,10 @@ export default function ArticlesPage() {
           {/* Pagination UI */}
           {totalPages > 1 && (
             <div className="flex justify-center mt-10">
-              <nav className="flex items-center space-x-2" aria-label="Pagination">
+              <nav
+                className="flex items-center space-x-2"
+                aria-label="Pagination"
+              >
                 {/* Previous button */}
                 <button
                   onClick={() => goToPage(currentPage - 1)}
@@ -184,13 +190,13 @@ export default function ArticlesPage() {
 
                 {/* Page numbers */}
                 {Array.from({ length: totalPages }).map((_, i) => {
-                  const pageNumber = i + 1;
+                  const pageNumber = i + 1
 
                   // Show first, last, and pages around current page
                   const shouldShow =
                     pageNumber === 1 ||
                     pageNumber === totalPages ||
-                    Math.abs(pageNumber - currentPage) <= 1;
+                    Math.abs(pageNumber - currentPage) <= 1
 
                   if (shouldShow) {
                     return (
@@ -205,16 +211,21 @@ export default function ArticlesPage() {
                       >
                         {pageNumber}
                       </button>
-                    );
+                    )
                   } else if (
                     (pageNumber === 2 && currentPage > 3) ||
-                    (pageNumber === totalPages - 1 && currentPage < totalPages - 2)
+                    (pageNumber === totalPages - 1 &&
+                      currentPage < totalPages - 2)
                   ) {
                     // Show ellipsis for skipped pages
-                    return <span key={`ellipsis-${pageNumber}`} className="px-1">...</span>;
+                    return (
+                      <span key={`ellipsis-${pageNumber}`} className="px-1">
+                        ...
+                      </span>
+                    )
                   }
 
-                  return null;
+                  return null
                 })}
 
                 {/* Next button */}
