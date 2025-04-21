@@ -28,7 +28,7 @@ export default function updateArticlePage() {
       if (!res.ok) throw new Error("Failed to create")
 
       const data = await res.json()
-      router.push(`/read/${data.article.id}`)
+      router.push(`/articles/${data.article.id}`)
     } catch (err) {
       console.error("Client error:", err)
       setError("Failed to update article.")

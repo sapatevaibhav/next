@@ -14,12 +14,16 @@ export default async function ArticlePage({ params }: Params) {
   const id = params.id
 
   try {
-    const article = await serverDrupal.getResource<DrupalNode>("node--article", id, {
-      params: {
-        "fields[node--article]": "title,body,field_image,uid,created",
-        include: "field_image,uid",
-      },
-    })
+    const article = await serverDrupal.getResource<DrupalNode>(
+      "node--article",
+      id,
+      {
+        params: {
+          "fields[node--article]": "title,body,field_image,uid,created",
+          include: "field_image,uid",
+        },
+      }
+    )
 
     if (!article) {
       return notFound()
@@ -32,9 +36,15 @@ export default async function ArticlePage({ params }: Params) {
           <div className="mb-4 border rounded-lg overflow-hidden shadow-md">
             <ArticleCard node={article} />
             <div className="p-6">
-              <div
-                dangerouslySetInnerHTML={{ __html: article.body.processed }}
-              />
+              {article.body && article.body.processed ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: article.body.processed }}
+                />
+              ) : (
+                <p className="text-gray-500 italic">
+                  No content available for this article.
+                </p>
+              )}
             </div>
           </div>
         </article>

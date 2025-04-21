@@ -1,15 +1,69 @@
-# Basic Starter
+# Next.js + Drupal Project
 
-A simple starter for building your site with Next.js and Drupal.
+This project is a Next.js application that integrates with Drupal as a headless CMS. It includes CRUD operations for articles, search functionality, sorting, filtering, pagination, and view loading for teachers list.
 
-## How to use
+## Features
 
-`npx create-next-app -e https://github.com/chapter-three/next-drupal-basic-starter`
+- **Article Management**: Full CRUD operations for article content
+- **Search Functionality**: Search articles by title and body
+- **Filters & Sorting**: Advanced filtering and sorting options
+- **Pagination**: Efficient data loading with pagination
+- **Teachers List**: Dedicated view for displaying teacher information
 
-## Deploy to Vercel
+## Installation
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fchapter-three%2Fnext-drupal-basic-starter&env=NEXT_PUBLIC_DRUPAL_BASE_URL,NEXT_IMAGE_DOMAIN,DRUPAL_CLIENT_ID,DRUPAL_CLIENT_SECRET&envDescription=Learn%20more%20about%20environment%20variables&envLink=https%3A%2F%2Fnext-drupal.org%2Fdocs%2Fenvironment-variables&project-name=next-drupal&demo-title=Next.js%20for%20Drupal&demo-description=A%20next-generation%20front-end%20for%20your%20Drupal%20site.&demo-url=https%3A%2F%2Fdemo.next-drupal.org&demo-image=https%3A%2F%2Fnext-drupal.org%2Fimages%2Fdemo-screenshot.jpg)
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/sapatevaibhav/next
+    cd next
+    ```
 
-## Documentation
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
 
-See https://next-drupal.org
+3. Create a `.env.local` file in the root directory with the following variables:
+    ```
+    NEXT_PUBLIC_DRUPAL_BASE_URL=your-drupal-url
+    NEXT_IMAGE_DOMAIN=your-drupal-domain
+    DRUPAL_CLIENT_ID=your-oauth-client-id
+    DRUPAL_CLIENT_SECRET=your-oauth-client-secret
+    ```
+
+## Running the Project
+
+### Development Mode
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:3000` to see the application.
+
+### Production Build
+
+```bash
+npm run build
+npm start
+```
+
+## Routes
+
+- `/` - Homepage
+- `/articles` - List of all articles with search, filter, and pagination
+- `/articles/[id]` - Individual article view
+- `/create` - Create new article (requires authentication)
+- `/update/[id]` - Edit existing article (requires authentication)
+- `/teachers` - List of all teachers (View from drupal server)
+
+
+## Results
+
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
+![alt text](image-4.png)
+![alt text](image-5.png)
+![alt text](image-6.png)
