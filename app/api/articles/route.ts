@@ -10,95 +10,134 @@ export async function GET(request: NextRequest) {
   const sort = (url.searchParams.get("sort") || "desc") as "asc" | "desc"
   const search = url.searchParams.get("search") || ""
 
-  const debugResponse = await serverDrupal.getResourceCollection<DrupalNode[]>(
-    "node--article",
-    {
-      params: {
-        "fields[node--article]": "title,body",
-        "page[limit]": 1,
-      },
-    }
-  )
-  console.log(
-    "DEBUG - Article field structure:",
-    JSON.stringify(debugResponse[0]?.body, null, 2)
-  )
-
   try {
-    const params: Record<string, any> = {
-      "fields[node--article]": "title,body,field_image,uid,created",
-      include: "field_image,uid",
-      "page[limit]": limit,
-      "page[offset]": (page - 1) * limit,
-      sort: sort === "asc" ? "created" : "-created",
-    }
-
-    if (search) {
-      params["filter[title][operator]"] = "CONTAINS"
-      params["filter[title][value]"] = search
-      params["filter[title][path]"] = "title"
-      params["filter[title][group]"] = "or-group"
-
-      params["filter[body][operator]"] = "CONTAINS"
-      params["filter[body][value]"] = search
-      params["filter[body][path]"] = "body.value"
-      params["filter[body][group]"] = "or-group"
-
-      params["filter[or-group][group][conjunction]"] = "OR"
-      params["filter[or-group][group][memberOf]"] = "title,body"
-    }
-
-    console.log("Search params:", params)
-
-    const response = await serverDrupal.getResourceCollection<DrupalNode[]>(
-      "node--article",
-      {
-        params,
+    if (!search) {
+      const params: Record<string, any> = {
+        "fields[node--article]": "title,body,field_image,uid,created",
+        include: "field_image,uid",
+        "page[limit]": limit,
+        "page[offset]": (page - 1) * limit,
+        sort: sort === "asc" ? "created" : "-created",
       }
-    )
 
-    const baseUrl = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL
-    const endpoint = "/jsonapi/node/article"
+      const response = await serverDrupal.getResourceCollection<DrupalNode[]>(
+        "node--article",
+        {
+          params,
+        }
+      )
 
-    const countParams = new URLSearchParams()
+      const baseUrl = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL
+      const endpoint = "/jsonapi/node/article"
+      const countParams = new URLSearchParams()
+      countParams.set("fields[node--article]", "id")
+      const countUrl = `${baseUrl}${endpoint}?${countParams.toString()}`
+      const countResponse = await fetch(countUrl, {
+        headers: {
+          Accept: "application/vnd.api+json",
+        },
+      })
+      const countData = await countResponse.json()
+      const total = countData.meta?.count || response.length
+      const pageCount = Math.ceil(total / limit)
 
-    if (search) {
-      countParams.set("filter[title][operator]", "CONTAINS")
-      countParams.set("filter[title][value]", search)
-      countParams.set("filter[title][path]", "title")
-      countParams.set("filter[title][group]", "or-group")
+      return NextResponse.json({
+        articles: response,
+        total,
+        pageCount,
+      })
+    } else {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_DRUPAL_BASE_URL
+        const indexName = "default_index"
+        const searchApiUrl = `${baseUrl}/jsonapi/index/${indexName}/search`
 
-      countParams.set("filter[body][operator]", "CONTAINS")
-      countParams.set("filter[body][value]", search)
-      countParams.set("filter[body][path]", "body.value")
-      countParams.set("filter[body][group]", "or-group")
+        console.log("Attempting Search API with index:", indexName)
 
-      countParams.set("filter[or-group][group][conjunction]", "OR")
-      countParams.set("filter[or-group][group][memberOf]", "title,body")
+        const requestBody = {
+          query: search,
+          page: {
+            limit: limit,
+            offset: (page - 1) * limit,
+          },
+        }
+
+        console.log("Search API Request:", {
+          url: searchApiUrl,
+          body: JSON.stringify(requestBody),
+        })
+
+        const searchResponse = await fetch(searchApiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/vnd.api+json",
+            Accept: "application/vnd.api+json",
+          },
+          body: JSON.stringify(requestBody),
+        })
+
+        if (!searchResponse.ok) {
+          const errorText = await searchResponse.text()
+          throw new Error(
+            `Search API error: ${searchResponse.status} - ${errorText}`
+          )
+        }
+
+        const searchData = await searchResponse.json()
+        console.log("Search API response structure:", Object.keys(searchData))
+
+        const total = searchData.meta?.count || searchData.data?.length || 0
+        const pageCount = Math.ceil(total / limit)
+
+        return NextResponse.json({
+          articles: searchData.data || [],
+          total,
+          pageCount,
+        })
+      } catch (searchError) {
+        console.error("Search API specific error:", searchError)
+
+        console.log(
+          "Falling back to JSON:API filtering with multiple conditions"
+        )
+
+        const params: Record<string, any> = {
+          "fields[node--article]": "title,body,field_image,uid,created",
+          include: "field_image,uid",
+          "page[limit]": limit,
+          "page[offset]": (page - 1) * limit,
+          sort: sort === "asc" ? "created" : "-created",
+
+          "filter[or-group][group][conjunction]": "OR",
+
+          "filter[title][condition][path]": "title",
+          "filter[title][condition][operator]": "CONTAINS",
+          "filter[title][condition][value]": search,
+          "filter[title][condition][memberOf]": "or-group",
+
+          "filter[body][condition][path]": "body.value",
+          "filter[body][condition][operator]": "CONTAINS",
+          "filter[body][condition][value]": search,
+          "filter[body][condition][memberOf]": "or-group",
+        }
+
+        const response = await serverDrupal.getResourceCollection<DrupalNode[]>(
+          "node--article",
+          {
+            params,
+          }
+        )
+
+        const total = response.length
+        const pageCount = Math.ceil(total / limit)
+
+        return NextResponse.json({
+          articles: response,
+          total,
+          pageCount,
+        })
+      }
     }
-
-    countParams.set("fields[node--article]", "id")
-
-    const countUrl = `${baseUrl}${endpoint}?${countParams.toString()}`
-    console.log("Count URL:", countUrl)
-
-    const countResponse = await fetch(countUrl, {
-      headers: {
-        Accept: "application/vnd.api+json",
-      },
-    })
-
-    const countData = await countResponse.json()
-    console.log("Count response meta:", countData.meta)
-
-    const total = countData.meta?.count || response.length
-    const pageCount = Math.ceil(total / limit)
-
-    return NextResponse.json({
-      articles: response,
-      total,
-      pageCount,
-    })
   } catch (error) {
     console.error("Failed to fetch articles:", error)
     return NextResponse.json(
